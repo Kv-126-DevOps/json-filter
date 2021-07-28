@@ -24,7 +24,6 @@ def sendJsonToRmq(msg):
     channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_SLACK'), body=msg)
     channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_RESTAPI'), body=msg)
 
-    print(msg)
     print("Done!")
     connection.close()
 
