@@ -24,6 +24,7 @@ def sendJsonToRmq(msg):
     channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_SLACK'), body=msg)
     channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_RESTAPI'), body=msg)
 
+    print(msg)
     print("Done!")
     connection.close()
 
@@ -91,18 +92,18 @@ def jsonFilter():
         
         print(json_result)
 
-        # TODO: deliver to RabbitMQ broker
-        sendJsonToRmq(json_result)
+        sendJsonToRmq(json_result)              # send msg to RMQ
 
         status_code = Response(status=200)                      # sends status '200 OK' in response
         return status_code
+
     except ValueError as err:
         status_code = Response(status=500)  # send status 'OK' in response
         return status_code, err
 
 if __name__ == '__main__':
     app.run(os.environ.get('HOST'), os.environ.get('PORT'))     # use environmental variables for host addr and port
-    # app.run(host='0.0.0.0', port=5000)
+    # app.run()
 
 
     
