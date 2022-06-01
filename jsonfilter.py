@@ -13,6 +13,7 @@ def sendJsonToRmq(msg):
 
     slack = os.environ.get('QUEUE_SLACK')
     restapi = os.environ.get('QUEUE_RESTAPI')
+    JSON_HOST = os.environ.get('HOST', 0.0.0.0)
 
     connection = pika.BlockingConnection(
     pika.ConnectionParameters(host=os.environ.get('RMQ_HOST'), port=os.environ.get('RMQ_PORT'), credentials=pika.PlainCredentials(os.environ.get('RMQ_LOGIN'), os.environ.get('RMQ_PASS'))))
@@ -101,7 +102,7 @@ def jsonFilter():
         return status_code, err
 
 if __name__ == '__main__':
-    app.run(os.environ.get('HOST'), os.environ.get('PORT'))     # use environmental variables for host addr and port
+    app.run(JSON_HOST, os.environ.get('PORT'))     # use environmental variables for host addr and port
     # app.run()
 
 
