@@ -15,26 +15,24 @@ def sendJsonToRmq(msg):
     slack = os.environ.get('QUEUE_SLACK')
     restapi = os.environ.get('QUEUE_RESTAPI')
     
-    RABBIT_HOST = os.environ.get("RABBIT_HOST")
-    RABBIT_PORT = os.environ.get("RABBIT_PORT")
-    RABBIT_USER = os.environ.get("RABBIT_USER")
-    RABBIT_PW = os.environ.get("RABBIT_PW")
+    MQ_CONNECTION = os.environ.get("MQ_CONNECTION")
 
-
-    ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-    ssl_context.set_ciphers('ECDHE+AESGCM:!ECDSA')
-    
-    parameters = pika.URLParameters(
-            f"amqp://{RABBIT_USER}:{RABBIT_PW}@{RABBIT_HOST}:{RABBIT_PORT}"
-        )
-
-    parameters.ssl_options = pika.SSLOptions(context=ssl_context)
-    connection = pika.BlockingConnection(parameters)
-
-    channel = connection.channel()
-
-    channel.queue_declare(queue=slack)
-    channel.queue_declare(queue=restapi)
+    if MQ_CONNECTION == "SSL":
+        RABBIT_HOST = os.environ.get("RABBIT_HOST")
+        RABBIT_PORT = os.environ.get("RABBIT_PORT")
+        RABBIT_USER = os.environ.get("RABBIT_USER")
+        RABBIT_PW = os.environ.get("RABBIT_PW")
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        ssl_context.set_ciphers('ECDHE+AESGCM:!ECDSA')
+        parameters = pika.URLParameters(f"amqp://{RABBIT_USER}:{RABBIT_PW}@{RABBIT_HOST}:{RABBIT_PORT}")
+        parameters.ssl_options = pika.SSLOptions(context=ssl_context)
+        connection = pika.BlockingConnection(parameters)  
+    else:
+        connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host=os.environ.get('RMQ_HOST'), port=os.environ.get('RMQ_PORT'), credentials=pika.PlainCredentials(os.environ.get('RMQ_LOGIN'), os.environ.get('RMQ_PASS'))))
+        channel = connection.channel()
+        channel.queue_declare(queue=slack)
+        channel.queue_declare(queue=restapi)
 
     channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_SLACK'), body=msg)
     channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_RESTAPI'), body=msg)
