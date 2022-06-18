@@ -31,17 +31,16 @@ def sendJsonToRmq(msg):
         connection = pika.BlockingConnection(
         pika.ConnectionParameters(host=os.environ.get('RMQ_HOST'), port=os.environ.get('RMQ_PORT'), credentials=pika.PlainCredentials(os.environ.get('RMQ_LOGIN'), os.environ.get('RMQ_PASS'))))
         channel = connection.channel()
-
-    parameters.ssl_options = pika.SSLOptions(context=ssl_context)
-    connection = pika.BlockingConnection(parameters)
-
-    channel = connection.channel()
-
-    channel.queue_declare(queue=slack)
-    channel.queue_declare(queue=restapi)
-
-    channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_SLACK'), body=msg)
-    channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_RESTAPI'), body=msg)
+        
+        parameters.ssl_options = pika.SSLOptions(context=ssl_context)
+        connection = pika.BlockingConnection(parameters)
+        
+        channel = connection.channel()
+        channel.queue_declare(queue=slack)
+        channel.queue_declare(queue=restapi)
+        
+        channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_SLACK'), body=msg)
+        channel.basic_publish(exchange='', routing_key=os.environ.get('QUEUE_RESTAPI'), body=msg)
 
     print("Done!")
     connection.close()
