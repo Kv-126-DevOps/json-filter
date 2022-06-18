@@ -17,7 +17,7 @@ def sendJsonToRmq(msg):
     
     MQ_CONNECTION = os.environ.get("MQ_CONNECTION")
 
-    if MQ_CONNECTION == 'SSL':
+    if MQ_CONNECTION == "SSL":
         RABBIT_HOST = os.environ.get("RABBIT_HOST")
         RABBIT_PORT = os.environ.get("RABBIT_PORT")
         RABBIT_USER = os.environ.get("RABBIT_USER")
