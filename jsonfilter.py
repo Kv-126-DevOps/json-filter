@@ -15,7 +15,7 @@ def sendJsonToRmq(msg):
     slack = os.environ.get('QUEUE_SLACK')
     restapi = os.environ.get('QUEUE_RESTAPI')
     
-    MQ_CONNECTION = os.environ.get("MQ_CONNECTION")
+    MQ_CONNECTION = os.environ.get("MQ_CONNECTION", "SSL")
 
     if MQ_CONNECTION == "SSL":
         RABBIT_HOST = os.environ.get("RABBIT_HOST")
