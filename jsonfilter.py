@@ -5,17 +5,41 @@ import json
 import dotenv
 import os
 import pika
+import ssl
 
 app = Flask(__name__)
 dotenv.load_dotenv()
 
 def sendJsonToRmq(msg):
 
-    slack = os.environ.get('QUEUE_SLACK')
-    restapi = os.environ.get('QUEUE_RESTAPI')
+    MQ_CONNECTION = os.environ.get("MQ_CONNECTION")
 
-    connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host=os.environ.get('RMQ_HOST'), port=os.environ.get('RMQ_PORT'), credentials=pika.PlainCredentials(os.environ.get('RMQ_LOGIN'), os.environ.get('RMQ_PASS'))))
+    if MQ_CONNECTION == 'SSL':
+        slack = os.environ.get('QUEUE_SLACK')
+        restapi = os.environ.get('QUEUE_RESTAPI')
+    
+        RABBIT_HOST = os.environ.get("RABBIT_HOST")
+        RABBIT_PORT = os.environ.get("RABBIT_PORT")
+        RABBIT_USER = os.environ.get("RABBIT_USER")
+        RABBIT_PW = os.environ.get("RABBIT_PW")
+
+
+        ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+        ssl_context.set_ciphers('ECDHE+AESGCM:!ECDSA')
+    
+        parameters = pika.URLParameters(
+            f"amqp://{RABBIT_USER}:{RABBIT_PW}@{RABBIT_HOST}:{RABBIT_PORT}"
+        )
+
+        parameters.ssl_options = pika.SSLOptions(context=ssl_context)
+        connection = pika.BlockingConnection(parameters)
+    else:
+        slack = os.environ.get('QUEUE_SLACK')
+        restapi = os.environ.get('QUEUE_RESTAPI')
+
+        connection = pika.BlockingConnection(
+        pika.ConnectionParameters(host=os.environ.get('RMQ_HOST'), port=os.environ.get('RMQ_PORT'), credentials=pika.PlainCredentials(os.environ.get('RMQ_LOGIN'), os.environ.get('RMQ_PASS'))))
+ 
     channel = connection.channel()
 
     channel.queue_declare(queue=slack)
@@ -103,6 +127,3 @@ def jsonFilter():
 if __name__ == '__main__':
     app.run(os.environ.get('HOST'), os.environ.get('PORT'))     # use environmental variables for host addr and port
     # app.run()
-
-
-    
